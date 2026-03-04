@@ -106,32 +106,6 @@
 
 </main>
 
-<!-- Modal senha -->
-<div class="modal show" id="authModal" aria-hidden="false">
-  <div class="modalBackdrop"></div>
-  <div class="modalPanel" role="dialog" aria-modal="true" style="max-width:520px;">
-    <div class="modalTop">
-      <div>
-        <div class="modalTitle">Acesso restrito</div>
-        <div class="muted">Digite a senha para entrar no Admin</div>
-      </div>
-    </div>
-
-    <div class="pad16">
-      <div class="field">
-        <label>Senha</label>
-        <input id="adminPass" type="password" placeholder="Digite a senha..."/>
-        <small class="muted" id="authMsg"></small>
-      </div>
-
-      <div class="formActions" style="justify-content:flex-end; padding:0;">
-        <a class="btn ghost" href="index.html">Voltar</a>
-        <button class="btn" type="button" id="btnAuth">Entrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <footer class="footer">
   <div class="wrap footInner">
     <div>
@@ -144,12 +118,11 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ✅ SUPABASE (carregar antes do admin.js) -->
+<!-- ✅ SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://mxeesqspauidsnsgpnwd.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_-Zaw4TY489qG__OP3j8Ixw_Cu2BmUSY";
-
   window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
