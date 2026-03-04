@@ -114,12 +114,11 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ✅ SUPABASE (carregar antes do app.js) -->
+<!-- ✅ SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://mxeesqspauidsnsgpnwd.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_-Zaw4TY489qG__OP3j8Ixw_Cu2BmUSYsb_publishable_-Zaw4TY489qG__OP3j8Ixw_Cu2BmUSY";
-
+  const SUPABASE_ANON_KEY = "sb_publishable_-Zaw4TY489qG__OP3j8Ixw_Cu2BmUSY"; // ✅ sem duplicar!
   window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
