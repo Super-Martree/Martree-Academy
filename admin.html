@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin | Martree Academy</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap topInner">
+    <div class="brand">
+      <div class="logoWrap" aria-hidden="true">🌳</div>
+      <div class="brandText">
+        <h1>Admin</h1>
+        <p>Gerenciar vídeos do Martree Academy</p>
+      </div>
+    </div>
+
+    <div class="topActions">
+      <a class="btn ghost" href="index.html">Voltar</a>
+      <button class="btn ghost" id="btnLogout" type="button">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card adminCard">
+    <div class="adminTop">
+      <div>
+        <h2>Novo vídeo (rápido)</h2>
+        <p class="muted">Cole o link e use <b>Importar do link</b> para puxar título e capa automaticamente.</p>
+      </div>
+
+      <div class="adminTools">
+        <button class="btn ghost" id="btnSeed" type="button">Carregar exemplos</button>
+        <button class="btn ghost" id="btnExport" type="button">Exportar JSON</button>
+        <label class="btn ghost fileBtn">
+          Importar JSON
+          <input id="importFile" type="file" accept="application/json" hidden>
+        </label>
+        <button class="btn danger" id="btnClearAll" type="button">Apagar tudo</button>
+      </div>
+    </div>
+
+    <form id="form" class="formGrid">
+      <input type="hidden" id="id"/>
+
+      <div class="field span2">
+        <label>Link do vídeo *</label>
+        <div class="row">
+          <input id="url" required placeholder="YouTube / Vimeo / URL .mp4" />
+          <button class="btn" type="button" id="btnImport">Importar do link</button>
+        </div>
+        <small class="muted">YouTube/Vimeo: puxa título e thumbnail. MP4: você pode colar uma URL pública.</small>
+      </div>
+
+      <div class="field">
+        <label>Título *</label>
+        <input id="title" required placeholder="Ex: Rotina de caixa (abertura e fechamento)"/>
+      </div>
+
+      <div class="field">
+        <label>Categoria *</label>
+        <input id="category" required placeholder="Ex: Caixa • Estoque • RH"/>
+      </div>
+
+      <div class="field span2">
+        <label>Capa (thumbnail URL)</label>
+        <input id="thumb" placeholder="Opcional (se vazio, tenta gerar automático)" />
+      </div>
+
+      <div class="field span2">
+        <label>Descrição</label>
+        <textarea id="description" rows="3" placeholder="Resumo curto do que o vídeo ensina..."></textarea>
+      </div>
+
+      <div class="field span2">
+        <label>Tags (separadas por vírgula)</label>
+        <input id="tags" placeholder="Ex: caixa, sangria, conferência"/>
+      </div>
+
+      <div class="formActions span2">
+        <button class="btn" type="submit" id="btnSave">Salvar</button>
+        <button class="btn ghost" type="button" id="btnReset">Limpar</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="gridHead">
+    <h3>Vídeos cadastrados</h3>
+    <div class="inputWrap small">
+      <span class="icon">🔎</span>
+      <input id="q" type="search" placeholder="Buscar..." autocomplete="off"/>
+    </div>
+  </section>
+
+  <section class="grid" id="grid"></section>
+
+  <section class="empty card" id="empty" hidden>
+    <h3>Sem vídeos ainda</h3>
+    <p class="muted">Cadastre o primeiro vídeo acima.</p>
+  </section>
+
+</main>
+
+<!-- Modal senha -->
+<div class="modal show" id="authModal" aria-hidden="false">
+  <div class="modalBackdrop"></div>
+  <div class="modalPanel" role="dialog" aria-modal="true" style="max-width:520px;">
+    <div class="modalTop">
+      <div>
+        <div class="modalTitle">Acesso restrito</div>
+        <div class="muted">Digite a senha para entrar no Admin</div>
+      </div>
+    </div>
+
+    <div class="pad16">
+      <div class="field">
+        <label>Senha</label>
+        <input id="adminPass" type="password" placeholder="Digite a senha..."/>
+        <small class="muted" id="authMsg"></small>
+      </div>
+
+      <div class="formActions" style="justify-content:flex-end; padding:0;">
+        <a class="btn ghost" href="index.html">Voltar</a>
+        <button class="btn" type="button" id="btnAuth">Entrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="wrap footInner">
+    <div>
+      <strong>Martree Academy</strong>
+      <div class="muted">Admin • gerenciamento</div>
+    </div>
+    <div class="muted">feito por <strong>totti-code</strong></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- ✅ SUPABASE (carregar antes do admin.js) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.supabaseClient = supabase.createClient(
+    "https://SEU-PROJECT.supabase.co",
+    "SUA_ANON_KEY"
+  );
+</script>
+
+<script src="admin.js"></script>
+</body>
+</html>
