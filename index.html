@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Martree Academy</title>
+  <link rel="stylesheet" href="style.css"/>
+  <meta name="theme-color" content="#0b1220">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap topInner">
+    <div class="brand">
+      <div class="logoWrap" aria-hidden="true">🌳</div>
+      <div class="brandText">
+        <h1>Martree Academy</h1>
+        <p>Treinamentos internos com padrão e organização</p>
+      </div>
+    </div>
+
+    <div class="topActions">
+      <a class="btn ghost" href="admin.html">Admin</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero card">
+    <div class="heroLeft">
+      <h2>Biblioteca de ensinamentos</h2>
+      <p class="muted">Pesquise, filtre por categoria e salve seus favoritos. Visual moderno com capa do vídeo.</p>
+
+      <div class="controls">
+        <div class="inputWrap">
+          <span class="icon">🔎</span>
+          <input id="q" type="search" placeholder="Buscar por título, tags, categoria..." autocomplete="off"/>
+        </div>
+
+        <select id="cat" class="select"></select>
+
+        <button class="btn ghost" id="btnFavs">Favoritos</button>
+        <button class="btn" id="btnReset">Limpar</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="statNum" id="sVideos">0</div><div class="statLabel">Vídeos</div></div>
+        <div class="stat"><div class="statNum" id="sCats">0</div><div class="statLabel">Categorias</div></div>
+        <div class="stat"><div class="statNum" id="sFavs">0</div><div class="statLabel">Favoritos</div></div>
+      </div>
+    </div>
+
+    <div class="heroRight">
+      <div class="hint">
+        <strong>⚡ Dica rápida</strong>
+        <p class="muted">No Admin, cole um link do YouTube/Vimeo e clique <b>Importar do link</b> para puxar título e capa automaticamente.</p>
+      </div>
+      <div class="hint">
+        <strong>📦 Backup</strong>
+        <p class="muted">Use Exportar/Importar no Admin para levar a biblioteca para outro PC/navegador.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="gridHead">
+    <h3>Treinamentos</h3>
+    <div class="muted" id="resultInfo"></div>
+  </section>
+
+  <section class="grid" id="grid"></section>
+
+  <section class="empty card" id="empty" hidden>
+    <h3>Nenhum vídeo encontrado</h3>
+    <p class="muted">Tente mudar os filtros ou adicione vídeos no Admin.</p>
+    <a class="btn" href="admin.html">Ir para Admin</a>
+  </section>
+
+</main>
+
+<!-- Modal Player -->
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modalBackdrop" id="mBack"></div>
+  <div class="modalPanel" role="dialog" aria-modal="true">
+    <div class="modalTop">
+      <div>
+        <div class="modalTitle" id="mTitle">Vídeo</div>
+        <div class="muted" id="mMeta"></div>
+      </div>
+      <button class="iconBtn" id="mClose" title="Fechar">✕</button>
+    </div>
+
+    <div class="player" id="player"></div>
+
+    <div class="modalBottom">
+      <div class="muted" id="mDesc"></div>
+      <div class="modalBtns">
+        <button class="btn ghost" id="mFav">Favoritar</button>
+        <a class="btn" id="mOpen" target="_blank" rel="noopener">Abrir</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="wrap footInner">
+    <div>
+      <strong>Martree Academy</strong>
+      <div class="muted">Treinamentos internos • organização • padrão</div>
+    </div>
+    <div class="muted">feito por <strong>totti-code</strong></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- ✅ SUPABASE (carregar antes do app.js) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.supabaseClient = supabase.createClient(
+    "https://SEU-PROJECT.supabase.co",
+    "SUA_ANON_KEY"
+  );
+</script>
+
+<script src="app.js"></script>
+</body>
+</html>
