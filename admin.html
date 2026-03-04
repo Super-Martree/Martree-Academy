@@ -147,10 +147,10 @@
 <!-- ✅ SUPABASE (carregar antes do admin.js) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  window.supabaseClient = supabase.createClient(
-    "https://mxeesqspauidsnsgpnwd.supabase.co",
-    "sb_publishable_-Zaw4TY489qG__OP3j8Ixw_Cu2BmUSY"
-  );
+  const SUPABASE_URL = "https://mxeesqspauidsnsgpnwd.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_-Zaw4TY489qG__OP3j8Ixw_Cu2BmUSY";
+
+  window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
 <script src="admin.js"></script>
