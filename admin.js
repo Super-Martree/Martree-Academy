@@ -70,7 +70,8 @@ function parseTags(s){
 function escapeHtml(s){
   return String(s ?? "")
     .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
 
@@ -134,7 +135,7 @@ async function importFromLink(url){
 async function fetchVideosAdmin(){
   const { data, error } = await sb()
     .from("videos")
-    .select("id,url,title,category,thumb,description,tags,created_at")
+    .select("id,url,title,category,thumb,description,tags,created_at,created_by")
     .order("created_at", { ascending:false });
 
   if(error) throw error;
@@ -143,7 +144,8 @@ async function fetchVideosAdmin(){
 
 async function createVideo(payload){
   const { data: { user } } = await sb().auth.getUser();
-  const { error } = await sb().from("videos").insert([{
+
+  const row = {
     id: payload.id || uid(),
     url: payload.url,
     title: payload.title,
@@ -151,8 +153,12 @@ async function createVideo(payload){
     thumb: payload.thumb || "",
     description: payload.description || "",
     tags: payload.tags || [],
-    created_by: user.id, // precisa existir na tabela
-  }]);
+  };
+
+  // Só seta created_by se existir user (e se sua tabela tiver essa coluna)
+  if(user?.id) row.created_by = user.id;
+
+  const { error } = await sb().from("videos").insert([row]);
   if(error) throw error;
 }
 
@@ -165,12 +171,72 @@ async function updateVideo(id, payload){
     description: payload.description || "",
     tags: payload.tags || [],
   }).eq("id", id);
+
   if(error) throw error;
 }
 
 async function deleteVideo(id){
   const { error } = await sb().from("videos").delete().eq("id", id);
   if(error) throw error;
+}
+
+// ====== Import/Export JSON (Banco) ======
+function downloadJson(filename, obj){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function exportJson(){
+  const videos = await fetchVideosAdmin();
+  // exporta só campos úteis
+  const clean = videos.map(v => ({
+    id: v.id,
+    url: v.url,
+    title: v.title,
+    category: v.category,
+    thumb: v.thumb || "",
+    description: v.description || "",
+    tags: Array.isArray(v.tags) ? v.tags : [],
+    created_at: v.created_at || null
+  }));
+  downloadJson("martree-academy-videos.json", clean);
+  toast("JSON exportado");
+}
+
+async function importJsonFile(file){
+  const text = await file.text();
+  const parsed = JSON.parse(text);
+  if(!Array.isArray(parsed)) throw new Error("JSON inválido: esperado um array");
+
+  // insere um por um (simples e confiável)
+  for(const item of parsed){
+    const payload = {
+      id: item.id || uid(),
+      url: String(item.url || "").trim(),
+      title: String(item.title || "").trim(),
+      category: String(item.category || "").trim(),
+      thumb: String(item.thumb || "").trim(),
+      description: String(item.description || "").trim(),
+      tags: Array.isArray(item.tags) ? item.tags.map(String) : []
+    };
+
+    if(!payload.url || !payload.title || !payload.category){
+      // pula itens ruins
+      continue;
+    }
+
+    // tenta upsert: se existir id, atualiza; se não, cria
+    // (isso exige que "id" seja PK/unique)
+    const { error } = await sb().from("videos").upsert([payload], { onConflict: "id" });
+    if(error) throw error;
+  }
 }
 
 // ====== Form ======
@@ -192,7 +258,7 @@ function fillForm(v){
   $("category").value = v.category || "";
   if($("thumb")) $("thumb").value = v.thumb || "";
   $("description").value = v.description || "";
-  $("tags").value = (v.tags || []).join(", ");
+  $("tags").value = (Array.isArray(v.tags) ? v.tags : []).join(", ");
   $("btnSave").textContent = "Atualizar";
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -258,9 +324,7 @@ async function render(){
       </div>
     `;
 
-    card.querySelector("[data-edit]")?.addEventListener("click", ()=>{
-      fillForm(v);
-    });
+    card.querySelector("[data-edit]")?.addEventListener("click", ()=> fillForm(v));
 
     card.querySelector("[data-del]")?.addEventListener("click", async ()=>{
       const ok = confirm(`Excluir "${v.title}"?`);
@@ -271,7 +335,7 @@ async function render(){
         toast("Vídeo removido");
       }catch(err){
         console.error(err);
-        alert("Erro ao excluir. Veja o console.\n\n" + (err?.message || err));
+        alert("Erro ao excluir.\n\n" + (err?.message || err));
       }
     });
 
@@ -284,7 +348,6 @@ async function seed(){
   if(has){
     const ok = confirm("Já existem vídeos cadastrados. SOBRESCREVER com exemplos?");
     if(!ok) return;
-    // apaga tudo (simples): deletar um por um (ok p/ poucos itens)
     for(const v of cacheAdmin){
       await deleteVideo(v.id);
     }
@@ -312,17 +375,15 @@ async function seed(){
 /* ====== Wiring ====== */
 function wire(){
   bind("q","input", ()=> render());
-
   bind("btnReset","click", clearForm);
 
-  bind("btnSeed","click", async ()=>{ await seed(); });
+  bind("btnSeed","click", async ()=> seed());
 
   bind("btnClearAll","click", async ()=>{
     const ok = confirm("Apagar TODOS os vídeos?");
     if(!ok) return;
 
     try{
-      // apaga um por um (ok p/ poucos; depois podemos otimizar com RPC)
       for(const v of cacheAdmin){
         await deleteVideo(v.id);
       }
@@ -338,15 +399,11 @@ function wire(){
   bind("btnImport","click", async ()=>{
     const urlEl = $("url");
     if(!urlEl) return;
-
     const url = urlEl.value.trim();
     if(!url){ alert("Cole o link do vídeo primeiro."); return; }
 
     const btn = $("btnImport");
-    if(btn){
-      btn.disabled = true;
-      btn.textContent = "Importando...";
-    }
+    if(btn){ btn.disabled = true; btn.textContent = "Importando..."; }
 
     try{
       const data = await importFromLink(url);
@@ -355,12 +412,34 @@ function wire(){
       if(th && $("thumb") && !$("thumb").value.trim()) $("thumb").value = th;
       toast("Importado do link");
     }catch(err){
-      alert("Não consegui importar automaticamente. Preencha manualmente.\n\nDetalhe: " + err.message);
+      alert("Não consegui importar automaticamente.\n\n" + err.message);
     }finally{
-      if(btn){
-        btn.disabled = false;
-        btn.textContent = "Importar do link";
-      }
+      if(btn){ btn.disabled = false; btn.textContent = "Importar do link"; }
+    }
+  });
+
+  // ✅ Exportar JSON (do banco)
+  bind("btnExport","click", async ()=>{
+    try{ await exportJson(); }
+    catch(err){ console.error(err); alert("Erro ao exportar.\n\n" + (err?.message || err)); }
+  });
+
+  // ✅ Importar JSON (para o banco)
+  bind("importFile","change", async (e)=>{
+    const file = e.target.files?.[0];
+    if(!file) return;
+    const ok = confirm("Importar este JSON para o banco? (vai atualizar pelo id)");
+    if(!ok) return;
+
+    try{
+      await importJsonFile(file);
+      await render();
+      toast("JSON importado");
+    }catch(err){
+      console.error(err);
+      alert("Erro ao importar.\n\n" + (err?.message || err));
+    }finally{
+      e.target.value = "";
     }
   });
 
@@ -399,24 +478,16 @@ function wire(){
     }
   });
 
-  // Logout do supabase (usa o botão Sair do header)
+  // Logout supabase
   bind("btnLogout","click", async ()=>{
     const ok = confirm("Sair do Admin?");
     if(!ok) return;
     await sb().auth.signOut();
     window.location.href = "index.html";
   });
-
-  // Se existir modal antigo de senha no HTML, só esconde pra não atrapalhar
-  const authModal = $("authModal");
-  if(authModal){
-    authModal.classList.remove("show");
-    authModal.setAttribute("aria-hidden","true");
-  }
 }
 
 document.addEventListener("DOMContentLoaded", async ()=>{
-  // trava o admin para não-admin
   const ok = await requireAdmin();
   if(!ok) return;
 
