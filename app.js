@@ -1,6 +1,7 @@
 // ===== Supabase helpers =====
 const sb = () => window.supabaseClient;
 
+// (no app público não precisa exigir login)
 async function requireLogin(){
   const { data: { session } } = await sb().auth.getSession();
   if(!session){
@@ -24,20 +25,7 @@ async function isAdmin(){
   return !!data;
 }
 
-async function requireAdmin(){
-  const ok = await requireLogin();
-  if(!ok) return false;
-
-  const okAdmin = await isAdmin();
-  if(!okAdmin){
-    alert("Sem permissão de admin.");
-    window.location.href = "index.html";
-    return false;
-  }
-  return true;
-}
-
-// ===== Favoritos continuam local =====
+// ===== Favoritos (local) =====
 const FAV_KEY = "martreeAcademy.favs.v2";
 const $ = (id) => document.getElementById(id);
 
@@ -62,7 +50,8 @@ function normalize(s){
 function escapeHtml(s){
   return String(s ?? "")
     .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
 }
 
@@ -149,10 +138,9 @@ async function fetchVideos(){
   return data || [];
 }
 
-// cache em memória pra modal funcionar sem buscar de novo
+// cache em memória
 let allCache = [];
 let onlyFavs = false;
-let activeId = null;
 
 function renderStats(all){
   const cats = uniqueCats(all);
@@ -174,7 +162,6 @@ async function render(){
   allCache = all;
   const favs = getFavs();
 
-  // categorias
   const cats = ["Todas as categorias", ...uniqueCats(all)];
   const sel = $("cat");
   const keep = sel.value || "Todas as categorias";
@@ -275,8 +262,6 @@ function openModal(id){
   const v = allCache.find(x=>x.id===id);
   if(!v) return;
 
-  activeId = id;
-
   $("mTitle").textContent = v.title || "Vídeo";
   $("mMeta").textContent = `${v.category||"Sem categoria"} • ${(v.tags||[]).join(", ") || "sem tags"}`;
   $("mDesc").textContent = v.description || "";
@@ -323,7 +308,6 @@ function showModal(show){
     m.classList.remove("show");
     m.setAttribute("aria-hidden","true");
     document.body.style.overflow="";
-    activeId = null;
   }
 }
 
