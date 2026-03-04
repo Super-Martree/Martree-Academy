@@ -10,6 +10,7 @@ async function requireLogin(){
   return true;
 }
 
+// ✅ AJUSTE APLICADO: agora mostra erro real no console e alerta
 async function isAdmin(){
   const { data: { user } } = await sb().auth.getUser();
   if(!user) return false;
@@ -20,7 +21,11 @@ async function isAdmin(){
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if(error) return false;
+  if(error){
+    console.error("[isAdmin] erro:", error);
+    alert("Erro ao verificar admin no Supabase. Veja o Console.");
+    return false;
+  }
   return !!data;
 }
 
@@ -30,7 +35,8 @@ async function requireAdmin(){
 
   const okAdmin = await isAdmin();
   if(!okAdmin){
-    alert("Sem permissão de admin.");
+    // ✅ melhoria: deixa claro que pode ser falta na tabela admins (quando não foi erro)
+    alert("Sem permissão de admin (usuário não está na tabela admins).");
     window.location.href = "index.html";
     return false;
   }
@@ -232,8 +238,7 @@ async function importJsonFile(file){
       continue;
     }
 
-    // tenta upsert: se existir id, atualiza; se não, cria
-    // (isso exige que "id" seja PK/unique)
+    // upsert por id (id precisa ser PK/unique)
     const { error } = await sb().from("videos").upsert([payload], { onConflict: "id" });
     if(error) throw error;
   }
