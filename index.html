@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Martree Academy</title>
 
-  <!-- Seus estilos -->
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="data:," />
 </head>
@@ -14,17 +13,22 @@
 
   <!-- ===== Header ===== -->
   <header class="top">
-    <div class="topInner">
-      <div class="brand">
-        <img src="assets/logo.png" class="logo" alt="Martree" />
-        <div class="topTitle">
-          <h1>Martree Academy</h1>
-          <p class="empresa">Vídeos de ensinamentos</p>
-        </div>
-      </div>
+    <div class="wrap">
+      <div class="topInner">
+        <div class="brand">
+          <!-- ✅ bate com seu CSS (.logoWrap) -->
+          <div class="logoWrap" aria-hidden="true">🎓</div>
 
-      <div style="display:flex; gap:10px;">
-        <button class="btn ghost" onclick="window.location.href='admin.html'">Admin</button>
+          <!-- ✅ bate com seu CSS (.brandText) -->
+          <div class="brandText">
+            <h1>Martree Academy</h1>
+            <p>Vídeos de ensinamentos</p>
+          </div>
+        </div>
+
+        <div class="topActions">
+          <button class="btn ghost" onclick="window.location.href='admin.html'">Admin</button>
+        </div>
       </div>
     </div>
   </header>
@@ -32,7 +36,7 @@
   <!-- ===== Conteúdo ===== -->
   <main class="wrap">
 
-    <!-- ✅ HERO (sem heroRight) -->
+    <!-- ✅ HERO CLEAN -->
     <section class="hero card heroClean">
       <div class="heroLeft">
         <h2>Biblioteca de ensinamentos</h2>
@@ -68,8 +72,9 @@
     </section>
 
     <!-- ===== Lista/Grade de vídeos ===== -->
-    <section class="card">
-      <div class="listHead">
+    <section class="card pad16">
+      <!-- ✅ bate com seu CSS (.gridHead) -->
+      <div class="gridHead">
         <h3>Vídeos</h3>
         <p class="muted" id="resultHint">Carregando...</p>
       </div>
@@ -77,37 +82,47 @@
       <div id="grid" class="grid"></div>
 
       <div id="empty" class="empty" style="display:none;">
-        <h4>Nenhum vídeo encontrado</h4>
+        <h3>Nenhum vídeo encontrado</h3>
         <p class="muted">Tente ajustar a busca, trocar a categoria ou sair do modo favoritos.</p>
       </div>
     </section>
 
-    <!-- ===== Modal player (se você usa) ===== -->
-    <div id="modal" class="modal" style="display:none;">
+    <!-- ===== Modal player (compatível com seu CSS) ===== -->
+    <div id="modal" class="modal">
       <div class="modalBackdrop" data-close="1"></div>
-      <div class="modalCard">
+
+      <!-- ✅ bate com seu CSS (.modalPanel) -->
+      <div class="modalPanel" role="dialog" aria-modal="true" aria-labelledby="mTitle">
         <div class="modalTop">
           <div>
             <div class="modalTitle" id="mTitle">Título</div>
-            <div class="modalMeta muted" id="mMeta">Categoria • 0min</div>
+            <div class="muted" id="mMeta">Categoria • 0min</div>
           </div>
           <button class="btn ghost" data-close="1">Fechar</button>
         </div>
 
-        <div class="playerWrap" id="playerWrap">
-          <!-- iframe/embed vai aqui via JS -->
+        <!-- ✅ bate com seu CSS (.player) -->
+        <div class="player" id="player">
+          <!-- iframe/embed entra via JS -->
         </div>
+
+        <!-- opcional: caso seu app.js use essa área depois -->
+        <div class="modalBottom" style="display:none;" id="modalBottom"></div>
       </div>
     </div>
 
-    <!-- Rodapé -->
-    <footer class="footer muted">
-      Feito por <b>totti-code</b> • Martree Academy
+    <!-- Rodapé (seu CSS usa .footer com .footInner, então deixei compatível) -->
+    <footer class="footer">
+      <div class="wrap">
+        <div class="footInner muted">
+          <div>Feito por <b>totti-code</b></div>
+          <div>• Martree Academy</div>
+        </div>
+      </div>
     </footer>
 
   </main>
 
-  <!-- Seu script principal -->
   <script src="app.js"></script>
 </body>
 </html>
