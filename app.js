@@ -27,7 +27,11 @@ async function isAdmin(){
 
 // ===== Favoritos (local) =====
 const FAV_KEY = "martreeAcademy.favs.v2";
+
+// helpers DOM seguros
 const $ = (id) => document.getElementById(id);
+const setText = (id, txt) => { const el = $(id); if(el) el.textContent = String(txt ?? ""); };
+const setHidden = (id, hidden) => { const el = $(id); if(el) el.hidden = !!hidden; };
 
 function toast(msg){
   const el = $("toast");
@@ -144,9 +148,15 @@ let onlyFavs = false;
 
 function renderStats(all){
   const cats = uniqueCats(all);
-  $("sVideos").textContent = String(all.length);
-  $("sCats").textContent = String(cats.length);
-  $("sFavs").textContent = String(getFavs().size);
+  setText("sVideos", all.length);
+  setText("sCats", cats.length);
+  setText("sFavs", getFavs().size);
+}
+
+function setResultInfo(text){
+  // no HTML novo usamos #resultHint
+  const el = $("resultHint") || $("resultInfo");
+  if(el) el.textContent = String(text ?? "");
 }
 
 async function render(){
@@ -162,14 +172,17 @@ async function render(){
   allCache = all;
   const favs = getFavs();
 
+  // categorias
   const cats = ["Todas as categorias", ...uniqueCats(all)];
   const sel = $("cat");
-  const keep = sel.value || "Todas as categorias";
-  sel.innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-  sel.value = cats.includes(keep) ? keep : "Todas as categorias";
+  if(sel){
+    const keep = sel.value || "Todas as categorias";
+    sel.innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    sel.value = cats.includes(keep) ? keep : "Todas as categorias";
+  }
 
-  const q = normalize($("q").value);
-  const cat = sel.value;
+  const q = normalize($("q")?.value);
+  const cat = $("cat")?.value || "Todas as categorias";
 
   let list = all.slice();
 
@@ -184,16 +197,17 @@ async function render(){
   }
 
   renderStats(all);
-  $("resultInfo").textContent = `${list.length} resultado(s)`;
+  setResultInfo(`${list.length} resultado(s)`);
 
   const grid = $("grid");
+  if(!grid) return;
   grid.innerHTML = "";
 
   if(list.length === 0){
-    $("empty").hidden = false;
+    setHidden("empty", false);
     return;
   }
-  $("empty").hidden = true;
+  setHidden("empty", true);
 
   list.forEach(v=>{
     const card = document.createElement("article");
@@ -262,12 +276,15 @@ function openModal(id){
   const v = allCache.find(x=>x.id===id);
   if(!v) return;
 
-  $("mTitle").textContent = v.title || "Vídeo";
-  $("mMeta").textContent = `${v.category||"Sem categoria"} • ${(v.tags||[]).join(", ") || "sem tags"}`;
-  $("mDesc").textContent = v.description || "";
+  setText("mTitle", v.title || "Vídeo");
+  setText("mMeta", `${v.category||"Sem categoria"} • ${(v.tags||[]).join(", ") || "sem tags"}`);
+
+  // desc é opcional (se existir no HTML, preenche)
+  setText("mDesc", v.description || "");
 
   const embed = buildEmbed(v.url);
   const player = $("player");
+  if(!player) return;
   player.innerHTML = "";
 
   if(embed.type==="mp4"){
@@ -284,27 +301,37 @@ function openModal(id){
     player.appendChild(iframe);
   }
 
-  const favs = getFavs();
-  $("mFav").textContent = favs.has(id) ? "Remover favorito" : "Favoritar";
-  $("mFav").onclick = ()=>{
-    toggleFav(id);
-    $("mFav").textContent = getFavs().has(id) ? "Remover favorito" : "Favoritar";
-    renderStats(allCache);
-    toast("Favoritos atualizados");
-  };
+  // botões opcionais (se existirem no HTML)
+  const favBtn = $("mFav");
+  if(favBtn){
+    const favs = getFavs();
+    favBtn.textContent = favs.has(id) ? "Remover favorito" : "Favoritar";
+    favBtn.onclick = ()=>{
+      toggleFav(id);
+      favBtn.textContent = getFavs().has(id) ? "Remover favorito" : "Favoritar";
+      renderStats(allCache);
+      toast("Favoritos atualizados");
+      render(); // atualiza cards
+    };
+  }
 
-  $("mOpen").href = v.url;
+  const openLink = $("mOpen");
+  if(openLink) openLink.href = v.url;
+
   showModal(true);
 }
 
 function showModal(show){
   const m = $("modal");
+  if(!m) return;
+
   if(show){
     m.classList.add("show");
     m.setAttribute("aria-hidden","false");
     document.body.style.overflow="hidden";
   }else{
-    $("player").innerHTML = "";
+    const player = $("player");
+    if(player) player.innerHTML = "";
     m.classList.remove("show");
     m.setAttribute("aria-hidden","true");
     document.body.style.overflow="";
@@ -312,27 +339,33 @@ function showModal(show){
 }
 
 function wire(){
-  $("q").addEventListener("input", ()=> render());
-  $("cat").addEventListener("change", ()=> render());
+  $("q")?.addEventListener("input", ()=> render());
+  $("cat")?.addEventListener("change", ()=> render());
 
-  $("btnFavs").addEventListener("click", ()=>{
+  $("btnFavs")?.addEventListener("click", ()=>{
     onlyFavs = !onlyFavs;
-    $("btnFavs").textContent = onlyFavs ? "Ver todos" : "Favoritos";
+    const b = $("btnFavs");
+    if(b) b.textContent = onlyFavs ? "Ver todos" : "Favoritos";
     render();
   });
 
-  $("btnReset").addEventListener("click", ()=>{
+  $("btnReset")?.addEventListener("click", ()=>{
     onlyFavs = false;
-    $("btnFavs").textContent = "Favoritos";
-    $("q").value = "";
-    $("cat").value = "Todas as categorias";
+    const b = $("btnFavs");
+    if(b) b.textContent = "Favoritos";
+    const q = $("q"); if(q) q.value = "";
+    const cat = $("cat"); if(cat) cat.value = "Todas as categorias";
     render();
   });
 
-  $("mClose").addEventListener("click", ()=>showModal(false));
-  $("mBack").addEventListener("click", ()=>showModal(false));
+  // ✅ fecha modal pelos elementos com data-close="1" (botão + backdrop)
+  document.querySelectorAll('[data-close="1"]').forEach(el=>{
+    el.addEventListener("click", ()=> showModal(false));
+  });
+
+  // ✅ ESC fecha
   document.addEventListener("keydown",(e)=>{
-    if(e.key==="Escape" && $("modal").classList.contains("show")) showModal(false);
+    if(e.key==="Escape" && $("modal")?.classList.contains("show")) showModal(false);
   });
 }
 
