@@ -16,10 +16,7 @@
     <div class="wrap">
       <div class="topInner">
         <div class="brand">
-          <!-- ✅ bate com seu CSS (.logoWrap) -->
           <div class="logoWrap" aria-hidden="true">🎓</div>
-
-          <!-- ✅ bate com seu CSS (.brandText) -->
           <div class="brandText">
             <h1>Martree Academy</h1>
             <p>Vídeos de ensinamentos</p>
@@ -36,7 +33,6 @@
   <!-- ===== Conteúdo ===== -->
   <main class="wrap">
 
-    <!-- ✅ HERO CLEAN -->
     <section class="hero card heroClean">
       <div class="heroLeft">
         <h2>Biblioteca de ensinamentos</h2>
@@ -71,9 +67,7 @@
       </div>
     </section>
 
-    <!-- ===== Lista/Grade de vídeos ===== -->
     <section class="card pad16">
-      <!-- ✅ bate com seu CSS (.gridHead) -->
       <div class="gridHead">
         <h3>Vídeos</h3>
         <p class="muted" id="resultHint">Carregando...</p>
@@ -81,37 +75,29 @@
 
       <div id="grid" class="grid"></div>
 
-      <div id="empty" class="empty" style="display:none;">
+      <div id="empty" class="empty" hidden>
         <h3>Nenhum vídeo encontrado</h3>
         <p class="muted">Tente ajustar a busca, trocar a categoria ou sair do modo favoritos.</p>
       </div>
     </section>
 
-    <!-- ===== Modal player (compatível com seu CSS) ===== -->
-    <div id="modal" class="modal">
+    <!-- ===== Modal ===== -->
+    <div id="modal" class="modal" aria-hidden="true">
       <div class="modalBackdrop" data-close="1"></div>
 
-      <!-- ✅ bate com seu CSS (.modalPanel) -->
       <div class="modalPanel" role="dialog" aria-modal="true" aria-labelledby="mTitle">
         <div class="modalTop">
           <div>
             <div class="modalTitle" id="mTitle">Título</div>
-            <div class="muted" id="mMeta">Categoria • 0min</div>
+            <div class="muted" id="mMeta">Categoria • tags</div>
           </div>
           <button class="btn ghost" data-close="1">Fechar</button>
         </div>
 
-        <!-- ✅ bate com seu CSS (.player) -->
-        <div class="player" id="player">
-          <!-- iframe/embed entra via JS -->
-        </div>
-
-        <!-- opcional: caso seu app.js use essa área depois -->
-        <div class="modalBottom" style="display:none;" id="modalBottom"></div>
+        <div class="player" id="player"></div>
       </div>
     </div>
 
-    <!-- Rodapé (seu CSS usa .footer com .footInner, então deixei compatível) -->
     <footer class="footer">
       <div class="wrap">
         <div class="footInner muted">
@@ -123,6 +109,27 @@
 
   </main>
 
+  <!-- Toast (seu app.js usa) -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ✅ Supabase (PRECISA vir antes do app.js) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- ✅ Inicialização do SupabaseClient -->
+  <script>
+    // 🔥 TROQUE pelos seus dados:
+    const SUPABASE_URL = "COLE_SUA_SUPABASE_URL_AQUI";
+    const SUPABASE_ANON_KEY = "COLE_SUA_SUPABASE_ANON_KEY_AQUI";
+
+    // evita quebrar se esquecer de preencher
+    if (SUPABASE_URL.startsWith("COLE_") || SUPABASE_ANON_KEY.startsWith("COLE_")) {
+      console.warn("Supabase não configurado: preencha SUPABASE_URL e SUPABASE_ANON_KEY no index.html");
+    } else {
+      window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  </script>
+
+  <!-- Seu script -->
   <script src="app.js"></script>
 </body>
 </html>
