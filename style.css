@@ -518,3 +518,43 @@ button, input, select, textarea{font-family:inherit}
   }
   ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.18)}
 }
+
+/* ====== HERO CLEAN ====== */
+.heroClean{
+  grid-template-columns: 1fr; /* remove coluna direita */
+}
+
+/* ====== CONTROLS CLEAN ====== */
+.controlsClean{
+  gap: 8px;
+}
+
+.inputClean{
+  padding: 9px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.035);
+}
+
+.selectClean{
+  border-radius: 16px;
+  background: rgba(255,255,255,.035);
+  min-width: 240px;
+}
+
+/* botões menores e mais discretos */
+.controlsClean .btn{
+  padding: 9px 12px;
+  border-radius: 14px;
+}
+
+/* ====== STATS CLEAN ====== */
+.statsClean{
+  margin-top: 12px;
+  gap: 8px;
+}
+
+.statsClean .stat{
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.03);
+}
