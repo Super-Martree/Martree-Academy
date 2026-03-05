@@ -1,8 +1,19 @@
 // ===== Supabase helpers =====
 const sb = () => window.supabaseClient;
 
+function ensureSb(){
+  const client = sb();
+  if(!client || typeof client.from !== "function"){
+    toast("Supabase não inicializado. Confira SUPABASE_URL e SUPABASE_ANON_KEY.");
+    console.error("SupabaseClient ausente. window.supabaseClient =", client);
+    return false;
+  }
+  return true;
+}
+
 // (no app público não precisa exigir login)
 async function requireLogin(){
+  if(!ensureSb()) return false;
   const { data: { session } } = await sb().auth.getSession();
   if(!session){
     window.location.href = "login.html";
@@ -12,6 +23,8 @@ async function requireLogin(){
 }
 
 async function isAdmin(){
+  if(!ensureSb()) return false;
+
   const { data: { user } } = await sb().auth.getUser();
   if(!user) return false;
 
@@ -27,11 +40,7 @@ async function isAdmin(){
 
 // ===== Favoritos (local) =====
 const FAV_KEY = "martreeAcademy.favs.v2";
-
-// helpers DOM seguros
 const $ = (id) => document.getElementById(id);
-const setText = (id, txt) => { const el = $(id); if(el) el.textContent = String(txt ?? ""); };
-const setHidden = (id, hidden) => { const el = $(id); if(el) el.hidden = !!hidden; };
 
 function toast(msg){
   const el = $("toast");
@@ -133,6 +142,7 @@ function placeholderThumb(){
 
 // ====== Banco: listar vídeos ======
 async function fetchVideos(){
+  if(!ensureSb()) return [];
   const { data, error } = await sb()
     .from("videos")
     .select("id,url,title,category,thumb,description,tags,created_at")
@@ -148,14 +158,13 @@ let onlyFavs = false;
 
 function renderStats(all){
   const cats = uniqueCats(all);
-  setText("sVideos", all.length);
-  setText("sCats", cats.length);
-  setText("sFavs", getFavs().size);
+  if($("sVideos")) $("sVideos").textContent = String(all.length);
+  if($("sCats")) $("sCats").textContent = String(cats.length);
+  if($("sFavs")) $("sFavs").textContent = String(getFavs().size);
 }
 
 function setResultInfo(text){
-  // no HTML novo usamos #resultHint
-  const el = $("resultHint") || $("resultInfo");
+  const el = $("resultHint");
   if(el) el.textContent = String(text ?? "");
 }
 
@@ -172,7 +181,6 @@ async function render(){
   allCache = all;
   const favs = getFavs();
 
-  // categorias
   const cats = ["Todas as categorias", ...uniqueCats(all)];
   const sel = $("cat");
   if(sel){
@@ -204,10 +212,10 @@ async function render(){
   grid.innerHTML = "";
 
   if(list.length === 0){
-    setHidden("empty", false);
+    if($("empty")) $("empty").hidden = false;
     return;
   }
-  setHidden("empty", true);
+  if($("empty")) $("empty").hidden = true;
 
   list.forEach(v=>{
     const card = document.createElement("article");
@@ -276,11 +284,8 @@ function openModal(id){
   const v = allCache.find(x=>x.id===id);
   if(!v) return;
 
-  setText("mTitle", v.title || "Vídeo");
-  setText("mMeta", `${v.category||"Sem categoria"} • ${(v.tags||[]).join(", ") || "sem tags"}`);
-
-  // desc é opcional (se existir no HTML, preenche)
-  setText("mDesc", v.description || "");
+  if($("mTitle")) $("mTitle").textContent = v.title || "Vídeo";
+  if($("mMeta")) $("mMeta").textContent = `${v.category||"Sem categoria"} • ${(v.tags||[]).join(", ") || "sem tags"}`;
 
   const embed = buildEmbed(v.url);
   const player = $("player");
@@ -300,23 +305,6 @@ function openModal(id){
     iframe.allowFullscreen = true;
     player.appendChild(iframe);
   }
-
-  // botões opcionais (se existirem no HTML)
-  const favBtn = $("mFav");
-  if(favBtn){
-    const favs = getFavs();
-    favBtn.textContent = favs.has(id) ? "Remover favorito" : "Favoritar";
-    favBtn.onclick = ()=>{
-      toggleFav(id);
-      favBtn.textContent = getFavs().has(id) ? "Remover favorito" : "Favoritar";
-      renderStats(allCache);
-      toast("Favoritos atualizados");
-      render(); // atualiza cards
-    };
-  }
-
-  const openLink = $("mOpen");
-  if(openLink) openLink.href = v.url;
 
   showModal(true);
 }
@@ -353,17 +341,15 @@ function wire(){
     onlyFavs = false;
     const b = $("btnFavs");
     if(b) b.textContent = "Favoritos";
-    const q = $("q"); if(q) q.value = "";
-    const cat = $("cat"); if(cat) cat.value = "Todas as categorias";
+    if($("q")) $("q").value = "";
+    if($("cat")) $("cat").value = "Todas as categorias";
     render();
   });
 
-  // ✅ fecha modal pelos elementos com data-close="1" (botão + backdrop)
   document.querySelectorAll('[data-close="1"]').forEach(el=>{
     el.addEventListener("click", ()=> showModal(false));
   });
 
-  // ✅ ESC fecha
   document.addEventListener("keydown",(e)=>{
     if(e.key==="Escape" && $("modal")?.classList.contains("show")) showModal(false);
   });
